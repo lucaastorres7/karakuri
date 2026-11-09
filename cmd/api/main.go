@@ -25,7 +25,7 @@ func (s *apiServer) run() error {
 
 	server := http.Server{
 		Addr: fmt.Sprintf(":%d", s.addr),
-		Handler: mux,
+		Handler: subrouterV1,
 	}
 
 	log.Println("Server listening on port", s.addr)
