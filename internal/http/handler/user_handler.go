@@ -26,7 +26,13 @@ func (h *userHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	id := r.PathValue("id")
-	uuid := uuid.MustParse(id)
+	uuid, err := uuid.Parse(id)
+	if err != nil {
+		pkg.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
 
 	u, err := h.svc.Get(ctx, uuid)
 	if err != nil {
