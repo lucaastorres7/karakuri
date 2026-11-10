@@ -1,7 +1,12 @@
 package user
 
+import (
+	"context"
+	"uuid"
+)
+
 type Repository interface {
-	Create(*User) error
-	FindById(string) (*User, error)
-	FindByEmail(string) (*User, error)
+	Create(ctx context.Context, u *User) error
+	FindById(ctx context.Context, id uuid.UUID) (*User, error)
+	FindByEmail(ctx context.Context, email string) (*User, error)
 }
