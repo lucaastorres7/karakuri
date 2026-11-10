@@ -8,8 +8,6 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_DB: ${DB_NAME}
-    env_file:
-      - ../.env
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped

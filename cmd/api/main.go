@@ -28,7 +28,6 @@ func newAPIServer(addr int, db *pgxpool.Pool) *apiServer {
 func (s *apiServer) run() error {
 	mux := http.NewServeMux()
 	subrouterV1 := http.NewServeMux()
-	subrouterV1.Handle("/api/v1/", http.StripPrefix("/api/v1", mux))
 
 	// Repository Layer
 	userRepo := postgres.NewUserRepository(s.db)
@@ -40,8 +39,9 @@ func (s *apiServer) run() error {
 	userHandler := handler.NewUserHandler(userSvc)
 
 	// Routes
-	userHandler.RegisterRoutes(subrouterV1)
+	userHandler.RegisterRoutes(mux)
 
+	subrouterV1.Handle("/api/v1/", http.StripPrefix("/api/v1", mux))
 	server := http.Server{
 		Addr: fmt.Sprintf(":%d", s.addr),
 		Handler: subrouterV1,
@@ -55,7 +55,8 @@ func main() {
 	ctx := context.Background()
 	environment := config.InitConfig()
 
-	dbPool, err := postgres.NewPool(ctx, "")
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", environment.DBUser, environment.DBPassword, environment.DBHost, environment.DBPort, environment.DBName)
+	dbPool, err := postgres.NewPool(ctx, dsn)
 	if err != nil {
 		log.Fatal("Error connecting to the database", err)
 	}

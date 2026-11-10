@@ -8,14 +8,24 @@ import (
 )
 
 type Config struct {
-	Port int
+	Port       int
+	DBUser     string
+	DBPassword string
+	DBName     string
+	DBHost     string
+	DBPort     int
 }
 
 func InitConfig() Config {
 	godotenv.Load()
 
 	return Config{
-		Port: getEnv("PORT", 8000),
+		Port:       getEnv("PORT", 8000),
+		DBUser:     getEnv("DB_USER", "user"),
+		DBPassword: getEnv("DB_PASSWORD", "password"),
+		DBName:     getEnv("DB_NAME", "database"),
+		DBHost:     getEnv("DB_HOST", "localhost"),
+		DBPort:     getEnv("DB_PORT", 5432),
 	}
 }
 
