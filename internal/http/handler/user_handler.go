@@ -20,6 +20,7 @@ func NewUserHandler(svc user.Service) *userHandler {
 
 func (h *userHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /users/{id}", h.handleGetUser)
+	mux.HandleFunc("POST /register", h.handleRegister)
 }
 
 func (h *userHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
@@ -43,4 +44,26 @@ func (h *userHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pkg.WriteJSON(w, http.StatusOK, u)
+}
+
+func (h *userHandler) handleRegister(w http.ResponseWriter, r *http.Request	) {
+	ctx := r.Context()
+	var payload RegisterUserPayload
+
+	if err := pkg.ParseJSON(r, payload); err != nil {
+		pkg.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	_, err := h.svc.Register(ctx, payload.Name, payload.Email, payload.Password, payload.Gender)
+	if err != nil {
+		pkg.WriteJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	pkg.WriteJSON(w, http.StatusCreated, nil)
 }
