@@ -1,20 +1,24 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"uuid"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/lucaastorres7/karakuri/internal/domain/user"
 	"github.com/lucaastorres7/karakuri/pkg"
 )
 
 type userHandler struct {
-	svc user.Service
+	svc       user.Service
+	validator *validator.Validate
 }
 
-func NewUserHandler(svc user.Service) *userHandler {
+func NewUserHandler(svc user.Service, v *validator.Validate) *userHandler {
 	return &userHandler{
 		svc: svc,
+		validator: v,
 	}
 }
 
@@ -50,9 +54,17 @@ func (h *userHandler) handleRegister(w http.ResponseWriter, r *http.Request	) {
 	ctx := r.Context()
 	var payload RegisterUserPayload
 
-	if err := pkg.ParseJSON(r, payload); err != nil {
+	if err := pkg.ParseJSON(r, &payload); err != nil {
 		pkg.WriteJSON(w, http.StatusBadRequest, map[string]string{
 			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := h.validator.Struct(payload); err != nil {
+		errs := err.(validator.ValidationErrors)
+		pkg.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": fmt.Errorf("invalid payload %v", errs).Error(),
 		})
 		return
 	}

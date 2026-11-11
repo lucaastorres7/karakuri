@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lucaastorres7/karakuri/internal/config"
 	"github.com/lucaastorres7/karakuri/internal/domain/user"
@@ -28,6 +29,7 @@ func newAPIServer(addr int, db *pgxpool.Pool) *apiServer {
 func (s *apiServer) run() error {
 	mux := http.NewServeMux()
 	subrouterV1 := http.NewServeMux()
+	validate := validator.New()
 
 	// Repository Layer
 	userRepo := postgres.NewUserRepository(s.db)
@@ -36,7 +38,7 @@ func (s *apiServer) run() error {
 	userSvc := user.NewService(userRepo)
 
 	// Transport Layer
-	userHandler := handler.NewUserHandler(userSvc)
+	userHandler := handler.NewUserHandler(userSvc, validate)
 
 	// Routes
 	userHandler.RegisterRoutes(mux)
