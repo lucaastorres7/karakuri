@@ -55,9 +55,8 @@ func (s *apiServer) run() error {
 
 func main() {
 	ctx := context.Background()
-	environment := config.InitConfig()
-
-	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", environment.DBUser, environment.DBPassword, environment.DBHost, environment.DBPort, environment.DBName)
+	
+	dsn := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", config.Env.DBUser, config.Env.DBPassword, config.Env.DBHost, config.Env.DBPort, config.Env.DBName)
 	dbPool, err := postgres.NewPool(ctx, dsn)
 	if err != nil {
 		log.Fatal("Error connecting to the database", err)
@@ -65,6 +64,6 @@ func main() {
 	defer dbPool.Close()
 	log.Println("Successfully connected to the database!")
 
-	server := newAPIServer(environment.Port, dbPool)
+	server := newAPIServer(config.Env.Port, dbPool)
 	server.run()
 }

@@ -8,24 +8,30 @@ import (
 )
 
 type Config struct {
-	Port       int
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBHost     string
-	DBPort     int
+	Port        					 int
+	DBUser      					 string
+	DBPassword  					 string
+	DBName      					 string
+	DBHost      					 string
+	DBPort      					 int
+	TokenSecret 					 string
+	TokenExpirationSeconds int
 }
 
-func InitConfig() Config {
+var Env = initConfig()
+
+func initConfig() Config {
 	godotenv.Load()
 
 	return Config{
-		Port:       getEnv("PORT", 8000),
-		DBUser:     getEnv("DB_USER", "user"),
-		DBPassword: getEnv("DB_PASSWORD", "password"),
-		DBName:     getEnv("DB_NAME", "database"),
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", 5432),
+		Port:       						getEnv("PORT", 8000),
+		DBUser:     						getEnv("DB_USER", "user"),
+		DBPassword: 						getEnv("DB_PASSWORD", "password"),
+		DBName:     						getEnv("DB_NAME", "database"),
+		DBHost:     						getEnv("DB_HOST", "localhost"),
+		DBPort:     						getEnv("DB_PORT", 5432),
+		TokenSecret: 						getEnv("TOKEN_SECRET", "secret"),
+		TokenExpirationSeconds: getEnv("TOKEN_EXPIRATION_SECONDS", 60*60*24), // 24 hours
 	}
 }
 

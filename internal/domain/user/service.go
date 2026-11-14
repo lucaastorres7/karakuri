@@ -7,6 +7,7 @@ import (
 	"time"
 	"uuid"
 
+	"github.com/lucaastorres7/karakuri/internal/config"
 	"github.com/lucaastorres7/karakuri/pkg"
 )
 
@@ -72,7 +73,7 @@ func (s *service) Login(ctx context.Context, email, password string) (string, er
 		return "", fmt.Errorf("invalid credentials")
 	}
 
-	token, err := pkg.CreateToken("alo", u.Id)
+	token, err := pkg.CreateToken(config.Env.TokenSecret, u.Id)
 	if err != nil {
 		return "", err
 	}
