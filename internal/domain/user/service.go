@@ -3,6 +3,7 @@ package user
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 	"uuid"
 
@@ -11,6 +12,7 @@ import (
 
 type Service interface {
 	Register(ctx context.Context, name, email, password, gender string) (*User, error)
+	Login(ctx context.Context, email, password string) (string, error)
 	Get(ctx context.Context, id uuid.UUID) (*User, error)
 }
 
@@ -58,4 +60,22 @@ func (s *service) Get(ctx context.Context, id uuid.UUID) (*User, error) {
 	}
 
 	return u, nil
+}
+
+func (s *service) Login(ctx context.Context, email, password string) (string, error) {
+	u, err := s.repo.FindByEmail(ctx, email)
+	if err != nil {
+		return "", fmt.Errorf("invalid credentials")
+	}
+
+	if !pkg.ComparePassword(u.Password, password) {
+		return "", fmt.Errorf("invalid credentials")
+	}
+
+	token, err := pkg.CreateToken("alo", u.Id)
+	if err != nil {
+		return "", err
+	}
+	
+	return token, nil
 }

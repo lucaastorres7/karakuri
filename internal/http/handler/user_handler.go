@@ -25,6 +25,7 @@ func NewUserHandler(svc user.Service, v *validator.Validate) *userHandler {
 func (h *userHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /users/{id}", h.handleGetUser)
 	mux.HandleFunc("POST /register", h.handleRegister)
+	mux.HandleFunc("POST /login", h.handleLogin)
 }
 
 func (h *userHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
@@ -78,4 +79,36 @@ func (h *userHandler) handleRegister(w http.ResponseWriter, r *http.Request	) {
 	}
 
 	pkg.WriteJSON(w, http.StatusCreated, nil)
+}
+
+func (h *userHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	var payload LoginUserPayload
+
+	if err := pkg.ParseJSON(r, &payload); err != nil {
+		pkg.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	if err := h.validator.Struct(payload); err != nil {
+		errs := err.(validator.ValidationErrors)
+		pkg.WriteJSON(w, http.StatusBadRequest, map[string]string{
+			"error": fmt.Errorf("invalid payload %v", errs).Error(),
+		})
+		return
+	}
+
+	token, err := h.svc.Login(ctx, payload.Email, payload.Password)
+	if err != nil {
+		pkg.WriteJSON(w, http.StatusInternalServerError, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	pkg.WriteJSON(w, http.StatusOK, map[string]string{
+		"token": token,
+	})
 }
