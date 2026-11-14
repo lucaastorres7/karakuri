@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/lucaastorres7/karakuri/internal/domain/user"
+	"github.com/lucaastorres7/karakuri/internal/http/middleware"
 	"github.com/lucaastorres7/karakuri/pkg"
 )
 
@@ -24,8 +25,31 @@ func NewUserHandler(svc user.Service, v *validator.Validate) *userHandler {
 
 func (h *userHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /users/{id}", h.handleGetUser)
+	mux.Handle("GET /users/me", middleware.RequireAuth(http.HandlerFunc(h.handleGetMe)))
 	mux.HandleFunc("POST /register", h.handleRegister)
 	mux.HandleFunc("POST /login", h.handleLogin)
+}
+
+func (h *userHandler) handleGetMe(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	claims, ok := pkg.GetUserClaims(ctx)
+	if !ok {
+		pkg.WriteJSON(w, http.StatusUnauthorized, map[string]string{
+			"error": "unauthorized",
+		})
+		return
+	}
+
+	u, err := h.svc.Get(ctx, claims.UserId)
+	if err != nil {
+		pkg.WriteJSON(w, http.StatusUnauthorized, map[string]string{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	pkg.WriteJSON(w, http.StatusOK, u)
 }
 
 func (h *userHandler) handleGetUser(w http.ResponseWriter, r *http.Request) {
