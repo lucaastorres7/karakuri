@@ -26,8 +26,8 @@ func NewUserHandler(svc user.Service, v *validator.Validate) *userHandler {
 func (h *userHandler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("GET /users/{id}", h.handleGetUser)
 	mux.Handle("GET /users/me", middleware.RequireAuth(http.HandlerFunc(h.handleGetMe)))
-	mux.HandleFunc("POST /register", h.handleRegister)
-	mux.HandleFunc("POST /login", h.handleLogin)
+	mux.HandleFunc("POST /users/register", h.handleRegister)
+	mux.HandleFunc("POST /users/login", h.handleLogin)
 }
 
 func (h *userHandler) handleGetMe(w http.ResponseWriter, r *http.Request) {
